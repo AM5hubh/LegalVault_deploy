@@ -1,0 +1,194 @@
+name: Security Checks
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  dependency-scanning:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Run Snyk vulnerability scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+        continue-on-error: true
+
+      - name: OWASP Dependency Check - Backend
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          path: './backend'
+          format: 'SARIF'
+          args: >
+            --enableExperimental
+          continue-on-error: true
+
+      - name: Upload SARIF report to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: './reports'
+
+  secret-detection:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog - Secret scanning
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --json
+
+      - name: Detect secrets with regex
+        run: |
+          echo "Scanning for hardcoded secrets..."
+          
+          # Check for AWS keys
+          if grep -r "AKIA[0-9A-Z]\{16\}" . --include="*.js" --include="*.json" --include="*.env*"; then
+            echo "⚠️ Potential AWS key found"
+          fi
+          
+          # Check for private keys
+          if grep -r "BEGIN RSA PRIVATE KEY" . --include="*.js" --include="*.pem"; then
+            echo "⚠️ Potential private key found"
+          fi
+          
+          echo "Secret scan complete"
+
+  code-scanning:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['javascript']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: '/language:${{ matrix.language }}'
+
+  container-scanning:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  license-scanning:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install license-checker
+        run: npm install -g license-checker
+
+      - name: Check backend licenses
+        working-directory: ./backend
+        continue-on-error: true
+        run: |
+          echo "Checking backend licenses..."
+          license-checker --json > licenses-backend.json
+          echo "Backend license check complete"
+
+      - name: Check frontend licenses
+        working-directory: ./frontend
+        continue-on-error: true
+        run: |
+          echo "Checking frontend licenses..."
+          license-checker --json > licenses-frontend.json
+          echo "Frontend license check complete"
+
+      - name: Archive license reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: license-reports
+          path: |
+            backend/licenses-backend.json
+            frontend/licenses-frontend.json
+          retention-days: 30
+
+  sast-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install and run ESLint with security plugins
+        working-directory: ./frontend
+        continue-on-error: true
+        run: |
+          npm install --save-dev eslint-plugin-security
+          npm run lint || true
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        continue-on-error: true

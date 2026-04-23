@@ -1,0 +1,33 @@
+{
+  "name": "LegalVault - Indian Legal Platform",
+  "short_name": "LegalVault",
+  "description": "Secure Blockchain-Based Digital Evidence Management System for Legal Cases",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ea580c",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/LEGALVAULTLOGO.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/LEGALVAULTLOGO.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/LEGALVAULTLOGO.png",
+      "sizes": "540x720",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["legal", "productivity"],
+  "prefer_related_applications": false
+}

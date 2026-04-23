@@ -1,0 +1,257 @@
+.document-upload-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.upload-card {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.upload-card h2 {
+  margin: 0 0 24px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.alert-error {
+  background-color: #fee 0;
+  color: #c1121f;
+  border: 1px solid #e5949a;
+}
+
+.alert-success {
+  background-color: #e6f9f0;
+  color: #1b4c3a;
+  border: 1px solid #b3dfd4;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.select-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.select-input:hover:not(:disabled) {
+  border-color: #999;
+}
+
+.select-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.select-input:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.file-upload-area {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  background-color: #fafafa;
+  transition: all 0.3s;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.file-upload-area.drag-over {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.upload-content svg {
+  color: #2563eb;
+}
+
+.upload-content h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.upload-content p {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.file-size-info {
+  font-size: 12px;
+  color: #999;
+}
+
+.file-info {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #f0f4ff;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.file-info p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #333;
+}
+
+.file-info strong {
+  color: #2563eb;
+}
+
+.progress-container {
+  margin-bottom: 20px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background-color: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.submit-btn:disabled {
+  background-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.info-box {
+  background-color: #f0f9ff;
+  border-left: 4px solid #0284c7;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.info-box h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0c4a6e;
+}
+
+.info-box ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.info-box li {
+  font-size: 13px;
+  color: #0c4a6e;
+  margin-bottom: 6px;
+}
+
+@media (max-width: 640px) {
+  .document-upload-container {
+    padding: 12px;
+  }
+
+  .upload-card {
+    padding: 20px;
+  }
+
+  .file-upload-area {
+    padding: 24px 15px;
+  }
+
+  .upload-content h3 {
+    font-size: 14px;
+  }
+
+  .upload-content svg {
+    width: 36px;
+    height: 36px;
+  }
+}

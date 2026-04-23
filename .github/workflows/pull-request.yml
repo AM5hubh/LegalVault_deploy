@@ -1,0 +1,131 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  changes-detection:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.changes.outputs.backend }}
+      frontend: ${{ steps.changes.outputs.frontend }}
+      tests: ${{ steps.changes.outputs.tests }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for changes
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+            tests:
+              - '**/*.test.js'
+              - 'backend/tests/**'
+
+  pr-validation:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PR title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            chore
+            ci
+
+      - name: Check commit messages
+        run: |
+          echo "Checking commit messages..."
+          git log --oneline --all ^origin/${{ github.base_ref }} origin/${{ github.head_ref }} | head -20
+
+  code-review-checklist:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Comment PR checklist
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const checklist = `
+            ## Code Review Checklist ✅
+            
+            - [ ] Tests added/updated
+            - [ ] Documentation updated
+            - [ ] No breaking changes (or documented)
+            - [ ] Code follows project style guidelines
+            - [ ] Performance impact considered
+            - [ ] Security implications reviewed
+            - [ ] Dependencies are up-to-date
+            
+            ## Automated Checks Status
+            
+            - Backend CI: Check actions tab
+            - Frontend CI: Check actions tab
+            - Security Scan: Check actions tab
+            
+            **Please ensure all checks pass before merging.**
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: pr.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: checklist
+            });
+
+  size-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Calculate changed files size
+        run: |
+          echo "## Changed Files Size" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          git diff --name-only origin/${{ github.base_ref }}...HEAD | while read file; do
+            if [ -f "$file" ]; then
+              size=$(wc -c < "$file")
+              echo "- $file: $(numfmt --to=iec-i --suffix=B $size 2>/dev/null || echo \"$size bytes\")" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+  duplicate-checker:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for duplicate files
+        run: |
+          echo "Checking for potential duplicate code..."
+          find backend/controllers -name "*.js" | xargs wc -l | sort -rn | head -10

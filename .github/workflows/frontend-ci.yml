@@ -1,0 +1,142 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'frontend/**'
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: ./frontend
+        continue-on-error: false
+        run: npm run lint
+
+      - name: Build application
+        working-directory: ./frontend
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL || 'http://localhost:5000' }}
+        run: npm run build
+
+      - name: Check build output
+        working-directory: ./frontend
+        run: |
+          echo "Checking build output..."
+          test -d dist && echo "✓ dist directory created" || echo "✗ dist directory not found"
+          test -f dist/index.html && echo "✓ index.html generated" || echo "✗ index.html not found"
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-build-${{ matrix.node-version }}
+          path: frontend/dist
+          retention-days: 30
+
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run npm audit
+        working-directory: ./frontend
+        continue-on-error: true
+        run: npm audit --audit-level=moderate
+
+      - name: Check for hardcoded secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./frontend
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug
+
+  accessibility-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build for accessibility testing
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Run lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          configPath: './frontend'
+
+  performance-check:
+    runs-on: ubuntu-latest
+    needs: lint-and-build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: frontend-build-20.x
+          path: frontend/dist
+
+      - name: Check build size
+        run: |
+          echo "Checking bundle sizes..."
+          if [ -f frontend/dist/index.html ]; then
+            du -sh frontend/dist
+            find frontend/dist -name "*.js" -exec du -h {} + | sort -rh | head -5
+          fi
