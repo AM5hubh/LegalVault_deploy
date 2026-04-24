@@ -32,9 +32,9 @@ const AdminLayout = ({ children }) => {
     { name: 'API Status', href: '/admin/api-status', icon: Activity },
     // { name: 'Evidence Monitor', href: '/admin/evidence', icon: FileText },
     { name: 'Evidence Verification', href: '/admin/evidence-verification', icon: FileWarning },
-    { name: 'Reports & Analytics', href: '/admin/reports', icon: BarChart3 },
-    { name: 'Security Audit', href: '/admin/security', icon: Shield },
-    { name: 'System Settings', href: '/admin/settings', icon: Settings },
+    // { name: 'Reports & Analytics', href: '/admin/reports', icon: BarChart3 },
+    // { name: 'Security Audit', href: '/admin/security', icon: Shield },
+    // { name: 'System Settings', href: '/admin/settings', icon: Settings },
     { name: 'Database Backup', href: '/admin/backup', icon: Database },
   ];
 
