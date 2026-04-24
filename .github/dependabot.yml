@@ -1,0 +1,77 @@
+# DEPENDABOT Configuration
+
+Configure Dependabot for automated dependency updates.
+
+## Setup Instructions
+
+1. Enable Dependabot in GitHub repository settings:
+   - Settings → Code security and analysis → Dependabot
+   - Enable: Dependabot alerts
+   - Enable: Dependabot security updates
+   - Enable: Dependabot version updates
+
+2. Create or update `.github/dependabot.yml`:
+
+```yaml
+version: 2
+updates:
+  # Backend dependencies
+  - package-ecosystem: "npm"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "devops-team"
+    labels:
+      - "dependencies"
+      - "backend"
+    allow:
+      - dependency-type: "all"
+    ignore:
+      - dependency-name: "hardhat"
+    grouping:
+      strategies:
+        - "major-minor"
+
+  # Frontend dependencies
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "frontend-team"
+    labels:
+      - "dependencies"
+      - "frontend"
+    allow:
+      - dependency-type: "all"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+    labels:
+      - "dependencies"
+      - "github-actions"
+```
+
+## Features
+
+- Automatic pull requests for dependency updates
+- Security vulnerability alerts
+- Automated merging for patch versions (optional)
+- Grouping strategies for better organization
+- Custom review schedules
+
+## Workflow Integration
+
+Dependabot PRs will trigger your CI/CD workflows automatically for testing.

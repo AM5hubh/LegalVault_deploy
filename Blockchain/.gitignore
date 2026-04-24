@@ -1,0 +1,77 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Hardhat artifacts
+cache/
+artifacts/
+typechain/
+typechain-types/
+
+# Coverage reports
+coverage/
+coverage.json
+.coverage_cache/
+.coverage_contracts/
+
+# Hardhat ignition
+ignition/deployments/chain-*/
+
+# Local deployments (comment out if you want to commit deployment addresses)
+# deployments.json
+
+# Build outputs
+dist/
+build/
+out/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Test results
+test-results/
+
+deployments.json
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS files
+Thumbs.db
+.DS_Store
+*.iml
+
+# Hardhat node
+.hardhat/
+
+# Gas reports
+gasReporterOutput.json
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Solidity coverage
+scTopics
+allFiredEvents
+
+# Local Hardhat network data
+localhost_deployments/
